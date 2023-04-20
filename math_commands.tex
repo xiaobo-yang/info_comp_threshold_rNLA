@@ -1,0 +1,93 @@
+\usepackage{algorithm} % algorithm block
+\usepackage{algpseudocode}
+\algrenewcommand\algorithmicrequire{\textbf{Input:}} % change REQUIRE to Input
+\algrenewcommand\algorithmicensure{\textbf{Output:}}
+
+\usepackage{booktabs} %pandas to latex
+\usepackage{graphicx} %\resizebox
+
+\usepackage[dvipsnames]{xcolor}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm} % proof section
+\usepackage{indentfirst}  %indent in the first line
+\setlength{\parindent}{2em}
+
+\usepackage{algorithm}
+\usepackage{algorithmicx}
+\usepackage{algpseudocode}
+\renewcommand{\algorithmicrequire}{\textbf{Input:}} % Use Input in the format of Algorithm
+\renewcommand{\algorithmicensure}{\textbf{Output:}} % Use Output in the format of Algorithm
+\algnewcommand{\algorithmicand}{\textbf{and }}
+\algnewcommand{\algorithmicor}{\textbf{or }}
+\algnewcommand{\OR}{\algorithmicor}
+\algnewcommand{\AND}{\algorithmicand}
+\makeatletter
+\newenvironment{breakablealgorithm}
+  {% \begin{breakablealgorithm}
+  \begin{center}
+     \refstepcounter{algorithm}% New algorithm
+     \hrule height.8pt depth0pt \kern2pt% \@fs@pre for \@fs@ruled
+     \renewcommand{\caption}[2][\relax]{% Make a new \caption
+      {\raggedright\textbf{\ALG@name~\thealgorithm} ##2\par}%
+      \ifx\relax##1\relax % #1 is \relax
+         \addcontentsline{loa}{algorithm}{\protect\numberline{\thealgorithm}##2}%
+      \else % #1 is not \relax
+         \addcontentsline{loa}{algorithm}{\protect\numberline{\thealgorithm}##1}%
+      \fi
+      \kern2pt\hrule\kern2pt
+     }
+  }{% \end{breakablealgorithm}
+     \kern2pt\hrule\relax% \@fs@post for \@fs@ruled
+  \end{center}
+  }
+
+\usepackage{mathrsfs} %for \mathscr
+
+\usepackage{parskip} % paraskip
+
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=red,urlcolor=magenta]{hyperref}  % hyperlink
+
+\newtheorem{thm}{Theorem}[section]
+\newtheorem{pp}{Principle}[section]
+\newtheorem{lem}{Lemma}[section]
+\newtheorem{cor}{Corollary}[section]
+\newtheorem{defn}{Definition}[section]
+\newtheorem{rmk}{Remark}[section]
+
+% proof
+\newcommand{\pf}[2]{\begin{proof}[Proof for Theorem~#1]#2\end{proof}}
+\newcommand{\pfsk}[2]{\begin{proof}[Proof sketch for Theorem~#1]#2\end{proof}}
+\newcommand{\pfm}[3]{\begin{proof}[Proof for #1~#2]#3\end{proof}}
+\newcommand{\pfskm}[3]{\begin{proof}[Proof sketch for #1~#2]#3\end{proof}}
+
+% thm enviroment with feastures
+\usepackage{tcolorbox}
+% \newenvironment{blackboxtheorem}[1][]{\begin{tcolorbox}[colback=white,colframe=black,title=Problem:~#1]}{\end{tcolorbox}} % generate a blackbox environment
+\newtcolorbox{problembox}[1][]{}  % generate a problem section with black box
+\newtheorem{prob}{Problem}[section] % Define prob with section number
+\numberwithin{prob}{section} % Number problems within sections
+\tcolorboxenvironment{prob}{colback=white,colframe=black,fonttitle=\bfseries}
+
+
+\newcommand{\PP}{\mathbb{P}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\fnorm}[1]{\|#1\|_F}
+\newcommand{\snorm}[1]{\|#1\|}
+\newcommand{\xb}[1]{\textcolor{OliveGreen}{xiaobo: #1}}
+\newcommand{\addtba}{\tba{(tba)}}
+\newcommand{\mc}[1]{\mathcal{#1}}
+\newcommand{\mb}[1]{\mathbb{#1}}
+\newcommand{\mf}[1]{\mathbf{#1}}
+\newcommand{\rn}[1]{\R^{#1\times #1}}
+\newcommand{\rnm}[2]{\R^{#1\times #2}}
+
+
+% big brackets
+\newcommand{\bbr}[1]{\left(#1\right)}
+\newcommand{\bbfr}[1]{\left[#1\right]}
+\newcommand{\bbwr}[1]{\left\{#1\right\}}
+
+% statistics
+\newcommand{\indep}{\perp \!\!\! \perp}
