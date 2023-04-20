@@ -1,0 +1,196 @@
+\chapter{Math Foundation}
+Basic math tools.
+
+%---------------------------------------------------
+%---------------------------------------------------
+\section{Key elements}
+\subsection{Yao's principle}
+When we analyze complexity of average-case problem with randomized algorithm, we can analyze a problem with randomized input and deterministic algorithm instead.
+\begin{thm}[Yao's minimax principle\cite{yao_prin}]
+ \label{yaoprin}
+Given a problem $\mc P$, let $\mc A$ be the set of all deterministic algorithms to solve $\mc P$ and $\mc X$ be the set of all instances of $\mc P$.
+Let $c(a,x)$ be the cost of algorithm $a\in\mc A$ solving instance $x\in\mc X$. For any distribution $p$ over $\mc A$ and any distribution $q$ over input space $\mc X$, consider randomized algorithm $A\sim p$ and random instance $X\sim q$. Then, we have
+$$
+\max _{x \in \mathcal{X}} \mathbf{E}[c(A, x)] \geq \min _{a \in \mathcal{A}} \mathbf{E}[c(a, X)]
+$$
+\end{thm}
+That is, the worst-case expected cost of the randomized algorithm is at least the expected cost of the best deterministic algorithm against input distribution $q$.
+\pf{\ref{yaoprin}}{
+Let $C=\max _{x \in \mathcal{X}} \mathbf{E}[c(A, x)]$ and $D=\min _{a \in \mathcal{A}} \mathbf{E}[c(a, X)]$. We have
+$$
+\begin{aligned}
+C & =\sum_x q_x C  \geq \sum_x q_x \mathbf{E}[c(A, x)]  =\sum_x q_x \sum_a p_a c(a, x)=\sum_a p_a \sum_x q_x c(a, x)  =\sum_a p_a \mathbf{E}[c(a, X)]  \geq \sum_a p_a D=D
+\end{aligned}
+$$
+}
+
+
+%---------------------------------------------------
+%---------------------------------------------------
+\section{Concentration inequalities}
+
+
+%---------------------------------------------------
+\subsection{Overlap of a vector on a large set}
+If two subsets of $\R^n$ are "large", then the "overlap" of them is large. Here, "large" means the subsets have large meassure under Gaussian measure, and "overlap" means: For any non-empty $A,B\subseteq \R^n$. Denote by $\gamma_{|A\times B}$ the probability measure corresponding to the normalized restriction of $\mc N(0,I_n)\times \mc N(0,I_n)$ to $A\times B$ and let
+\[
+v(A,B):=\mb E_{(x,y)\sim\gamma_{|A\times B}}[|\langle x,y \rangle|^2].
+\]
+Formally, we have
+\begin{thm}[\cite{vidick2012concentration}]
+\label{large_overlap}
+For any $\eta>0$, there exists ${ }^1$ a $\delta>0$ such that for all large enough $n$, if $A, B$ both have measure $\gamma(A), \gamma(B) \geq e^{-\delta n}$ then
+$$
+v(A, B) \geq(1-\eta) v\left(\mathbb{R}^n, \mathbb{R}^n\right)=(1-\eta) n
+$$
+\end{thm}
+It's continuous version of \eqref{anti_concen_ghd}, which is more general to yield corruption bound for communication problem with continuous domain $\mc X,\mc Y$ and rectangle $R$.
+%---------------------------------------------------
+\subsection{Hutchinson's trace estimator}
+A simple estimator of trace of matrix by monte carlo method and we use only matrix-vector product oracle.
+\begin{defn}[Hutchinson's Estimator]
+\label{hutchinson_est}
+Given a matrix $A\in\R^{d\times d}$. We estimate $tr(A)$ by
+\[
+H_m(A) = \frac{1}{m}\sum_{i=1}^m g_i^T A g_i = \frac{1}{m}tr(G^T A G),
+\]
+where $G=[g_1,...,g_m]\in\R^{d\times m}$ is a Gaussian matrix with $i.i.d.$ $\mc N(0,1)$ entries.
+\end{defn}
+
+\begin{thm}[Hutchinson analysis\cite{mmmw21}]
+\label{hutchinson_bound}
+Let $A \in \mathbb{R}^{d \times d}, \delta \in(0,1 / 2], \ell \in \mathbb{N}$. Let $\mathrm{H}_{\ell}(A)$ be the $\ell$-query Hutchinson estimator defined in (1), implemented with mean 0, i.i.d. sub-Gaussian random variables with constant sub-Gaussian parameter. For fixed constants $c, C$, if $\ell>c \log (1 / \delta)$, then with probability $\geq 1-\delta$,
+$$
+\left|\mathrm{H}_{\ell}(A)-\operatorname{tr}(A)\right| \leq C \sqrt{\frac{\log (1 / \delta)}{\ell}}\|A\|_F .
+$$
+So, if $\ell=O\left(\frac{\log (1 / \delta)}{\varepsilon^2}\right)$ then, with probability $\geq 1-\delta,\left|\mathrm{H}_{\ell}(A)-\operatorname{tr}(A)\right| \leq \varepsilon\|A\|_F$.
+\end{thm}
+\pfsk{\ref{hutchinson_bound}}{
+First, vectorize gaussian matrix $G$ to $\bar{g}\in\R^{dl}$ and let $\bar{A}=diag\{A,A,...,A\}\in\R^{dl\times dl}$.
+
+Then, $H_l(A)=\bar{g}^T\bar{A}\bar{g}/l$ and use Hanson-Wright inequality\cite{hdp}.
+}
+
+%---------------------------------------------------
+\subsection{Talagrand's inequality}
+\begin{thm}[Talagrand\cite{sherstov2012communication}]
+\label{tal_ineq}
+For a fixed convex set $S \subseteq \mathbb{R}^n$ and a random $x \in\{-1,+1\}^n$,
+$$
+\mathbb{P}[x \in S] \mathbb{P}[\rho(x, S)>t] \leq \mathrm{e}^{-t^2 / 16},
+$$
+where $\rho(x, S)=\inf _{y \in S}\|x-y\|$.
+\end{thm}
+Intuitively, it means measure concentration around convex hull of large subset $S\subseteq\{\pm 1\}^n$, where the measure means counting measure(or uniform distribution). It can be seen as an isoperimetric inequality in discrete structures.
+
+The usefulness of Talagrand's inequality is led by appropriately choosing set $S$, according to property we interest. Here are some useful corollaries.
+\begin{cor}[\cite{sherstov2012communication}]
+\label{tal_ineq_proj}
+For every linear subspace $V \subseteq \mathbb{R}^n$ and every $t>0$, one has
+$$
+\underset{x \in\{-1,+1\}^n}{\mb{P}}\left[\left|\left\|\operatorname{proj}_V x\right\|-\sqrt{\operatorname{dim} V}\right|>t\right]<4 \mathrm{e}^{-c t^2},
+$$
+where $c>0$ is an absolute constant.
+\end{cor}
+\pf{\ref{tal_ineq_proj}}{ First, note that it suffices to prove
+$$
+\mathbf{P}[|\rho(x, V)-\sqrt{n-\operatorname{dim} V}|>t] \leq 4 \mathrm{e}^{-\Omega\left(t^2\right)}
+$$
+and $n-\operatorname{dim} V= tr(\mb E[x^T(I-P_V)x]) =\mb E[\rho(x,V)^2]$, where $P_v$ is orthogonal projection on $V$.
+ Therefore, take $S=\{v\in\R^n:\rho(v,V)\le a\}$, then by Talagrand's inequality we have
+\[
+\mathbb{P}[\rho(x, V) \leq a] \mathbb{P}[\rho(x, V)>a+t] \le \mathbb{P}[\rho(x, V) \leq a] \mathbb{P}[\rho(x, S)>t]  \leq \mathrm{e}^{-t^2 / 16}.
+\]
+Then, take $a=median(\rho(x,V)):=m$, we have
+$$
+\begin{aligned}
+& \mathbb{P}[\rho(x, V)>m+t] \leq 2 \mathrm{e}^{-t^2 / 16}, \\
+& \mathbb{P}[\rho(x, V) \leq m-t] \leq 2 \mathrm{e}^{-t^2 / 16}.
+\end{aligned}
+$$
+Finally, the result follows $m=\sqrt{\mb E[\rho(x,V)^2]}+O(1)$. See \cite{tao09web} for details.
+}
+
+%---------------------------------------------------
+%---------------------------------------------------
+\section{Statistical distance}
+\begin{thm}[\cite{pwbm18} proposition 5.11]
+\label{spiked_gaussian_chi_dist}
+For any $|\beta|<1$, there exists $\delta>0$ such that the following holds. Let $\mc X=\{\mc X_n\}$ be a family of prior distribution of spiked vectors $x$ with $1-\delta\le\|x\|\le 1+\delta$. Let $Q_n$ be joint distribution of $N$ $i.i.d$ samples from $\mc N(0,I_n+\beta xx^T)$ and $P_n$ be joint distribution of $N$ $i.i.d$ samples from $\mc N(0,I_n)$. Then we have
+\[
+\mb E_{P_n}\bbfr{\bbr{\frac{dQ_n}{dP_n}}^2} = \mb E_{x,x'\sim\mc X_n}\bbfr{(1-\beta^2\langle x,x' \rangle^2)^{-N/2}}.
+\]
+\end{thm}
+\pf{\ref{spiked_gaussian_chi_dist}}{
+First, expand LHS directly, we have $ \underset{P_n}{\mathbb{E}}\left[\left(\frac{\mathrm{d} Q_n}{\mathrm{~d} P_n}\right)^2\right]=\underset{Q_n}{\mathbb{E}}\left[\frac{\mathrm{d} Q_n}{\mathrm{~d} P_n}\right]$
+$$
+\begin{aligned}
+& \frac{\mathrm{d} Q_n}{\mathrm{~d} P_n}\left(y_1, \ldots, y_N\right)=\underset{x^{\prime} \sim \mathcal{X}}{\mathbb{E}}\left[\prod_{i=1}^n \frac{\exp \left(-\frac{1}{2} y_i^{\top}\left(I+\beta x^{\prime} x^{\prime \top}\right)^{-1} y_i\right)}{\sqrt{\operatorname{det}\left(I+\beta x^{\prime} x^{\prime \top}\right)} \exp \left(-\frac{1}{2} y_i^{\top} y_i\right)}\right] \\
+& =\underset{x^{\prime}}{\mathbb{E}}\left[\operatorname{det}\left(I+\beta x^{\prime} x^{\prime \top}\right)^{-N / 2} \prod_{i=1}^N \exp \left(-\frac{1}{2} y_i^{\top}\left(\left(I+\beta x^{\prime} x^{\prime \top}\right)^{-1}-I\right) y_i\right)\right] .
+\end{aligned}
+$$
+Then, simplify it by  Sherman–Morrison formula, we have $\left(I+\beta x^{\prime} x^{\prime \top}\right)^{-1}-I=\frac{-\beta}{1+\beta\left\|x^{\prime}\right\|^2} x^{\prime} x^{\prime \top}$, and then
+$$
+=\underset{x^{\prime}}{\mathbb{E}}\left[\left(1+\beta\left\|x^{\prime}\right\|^2\right)^{-N / 2} \prod_{i=1}^N \exp \left(\frac{1}{2} \frac{\beta}{1+\beta\left\|x^{\prime}\right\|^2}\left\langle y_i, x^{\prime}\right\rangle^2\right)\right] .
+$$
+Finally, passing to the second moment, we compute
+$$
+\begin{aligned}
+& \underset{P_n}{\mathbb{E}}\left[\left(\frac{\mathrm{d} Q_n}{\mathrm{~d} P_n}\right)^2\right]=\underset{x, x^{\prime}}{\mathbb{E}}\left[\left(1+\beta\left\|x^{\prime}\right\|^2\right)^{-N / 2} \prod_{i=1}^N \underset{y_i \sim \mathcal{N}\left(0, I+\beta x x^{\top}\right)}{\mathbb{E}} \exp \left(\frac{1}{2} \frac{\beta}{1+\beta\left\|x^{\prime}\right\|^2}\left\langle y_i, x^{\prime}\right\rangle^2\right)\right]\\
+& =\underset{x, x^{\prime}}{\mathbb{E}}\left[\left(1+\beta\left\|x^{\prime}\right\|^2\right)^{-N / 2} \prod_{i=1}^N\left(1-\frac{\beta}{1+\beta\left\|x^{\prime}\right\|^2}\left(\left\|x^{\prime}\right\|^2+\beta\left\langle x, x^{\prime}\right\rangle^2\right)\right)^{-1 / 2}\right] \\
+& =\underset{x, x^{\prime}}{\mathbb{E}}\left[\left(1-\beta^2\left\langle x, x^{\prime}\right\rangle^2\right)^{-N / 2}\right]
+\end{aligned}
+$$
+Note that, the condition about $\delta$ is because here the MGF step requires
+$
+\frac{\beta}{1+\beta\left\|x^{\prime}\right\|^2}\left(\left\|x^{\prime}\right\|^2+\beta\left\langle x, x^{\prime}\right\rangle^2\right)<1
+$.
+}
+
+\begin{thm}[\cite{jpwz21}]
+\label{gauss_kl}
+For distribution $P=\mc N_k(\mu_1,\Sigma_1)$ and $Q=\mc N_k(\mu_2,\Sigma_2)$, we have
+\[
+d_{KL}(P,Q)=\frac{1}{2}\bbwr{
+(\mu_2-\mu_1)^T\Sigma_2^{-1}(\mu_2-\mu_1)
++ tr(\Sigma_2^{-1}\Sigma_1) - \log\frac{det(\Sigma_1)}{det(\Sigma_2)-k}
+}.
+\]
+\end{thm}
+
+\begin{thm}[Data processing inequality\cite{jpwz21}]
+\label{data_process}
+For random variable $X,Y$ and any function $f$, we have
+\[
+d_{KL}(f(X),f(Y))\le d_{KL}(X,Y).
+\]
+\end{thm}
+%---------------------------------------------------
+%---------------------------------------------------
+\section{Random matrices}
+In this section, we denote the distribution of random matrices $G\in\R^{n\times n}$ with $i.i.d.$ $\mc N(0,1)$ entries by $\mc N(n)$.
+\begin{thm}[Remaining randomness\cite{simchowitz2020tight}\cite{jpwz21}]
+\label{block_conditional} 
+Let $G\sim\mc N(n)$. Let $W=(G+G^T)/2$. For any sequence of vector queries $v_1,...,v_T$, along with oracles $w_i=Wv_i$. Then, conditioned on these observations, there exists a rotation matrix $U$, independent of $w_i$, such that
+\[
+UWU^T=\begin{bmatrix}
+    Y_1 & Y_2^T \\
+    Y_2 & \widetilde{W}
+\end{bmatrix},
+\]
+where $Y_1,Y_2$ are deterministic and $\widetilde{W}=(\widetilde{G}+\widetilde{G}^T)/2$, where $\widetilde{G}\sim\mc N(n-T)$.
+\end{thm}
+\pfsk{\ref{block_conditional}}{
+
+}
+
+\begin{thm}[concentration of the largest singular value\cite{jpwz21}]
+\label{rmt_smax_concen}
+Let $G\sim\mc N(n)$. Then, for any $t\ge 0$ we have
+\[
+\mb P[s_{max}(G)\le 2\sqrt{n}+t]\ge 1-2e^{-t^2/2}.
+\]
+\end{thm}
+\pfsk{\ref{rmt_smax_concen}}{
+    
+}
