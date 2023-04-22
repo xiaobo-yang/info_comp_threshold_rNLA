@@ -184,16 +184,13 @@ if $m=O(k+\log(1/\delta))$, then with probability at least $1-\delta$ we have $\
 
 Basic ideal is to use theorem \ref{regress_sketch} to do column and row sketching for regression respectively.
 
-First, note that $\wtd X:= (S^TAR)^+S^TA=\arg\min_X\fnorm{S^T(ARX-A)}$ by theorem \ref{proj}, thus 
-if $c_1 m=O(c_2 m+\log(1/\delta))$
-we have $\|A-\wtd A\|_F\le O(1)\fnorm{A-ARX^*}$, where
-$X^*=\arg\min_X\fnorm{ARX-A}$ with probability(of $S$) at least $1-\delta$.
+First, note that $\fnorm{A-A_k}=\min_X\fnorm{A-A_kX}$. Consider regression sketching $\bar{X}=\arg\min_X\fnorm{R^T(A-A_kX)}=(R^TA_k)^+R^TA$,
+then if $c_2 m=O(k+\log(1/\delta))$, we have $O(1)\fnorm{A-A_k}\ge\fnorm{A-A_k\bar{X}}$  with probability(of $R$) at least $1-\delta$.
 
-Then, by definition we have $\fnorm{A-ARX^*}\le\fnorm{A-AR(A_kR)^+A_k}=\fnorm{A-\bar{X}A_k}$. Note that $\bar{X}:=\arg\min_X\fnorm{(XA_k-A)R}=AR(A_kR)^+$, 
-thus if $c_2 m=O(k+\log(1/\delta))$
-we have $\fnorm{A-\bar{X}A_k}\le O(1)\fnorm{A-AA_k^+A_k}=O(1)\fnorm{A-A_k}$ with probability(of $R$) at least $1-\delta$.
+Then, note that $\fnorm{A-A_k\bar{X}}=\fnorm{A-A_k(R^TA_k)^+R^TA}=\fnorm{A-AR(A_kR)^+A_k}\ge\fnorm{A-ARX^*}$, where $X^*=\arg\min_X\fnorm{ARX-A}$.
+Then another regression sketching yields that, if $c_1 m=O(c_2 m+\log(1/\delta))$, we have $O(1)\fnorm{A-ARX^*}\ge\fnorm{A-AR\wtd X}$, where $\wtd X:=\arg\min_X\fnorm{S^T(ARX-A)}=(S^TAR)^+S^TA$.
 
-Finally, if $m=O(k+\log(1/\delta))$ we have $\fnorm{A-\wtd A}\le O(1)\fnorm{A-ARX^*}\le O(1)\fnorm{A-\bar{X}A_k}\le O(1)\fnorm{A-A_k}$ $w.h.p.$
+Finally, if $m=O(k+\log(1/\delta))$ we have $O(1)\fnorm{A-A_k}\ge O(1)\fnorm{A-\bar{X}A_k}\ge O(1)\fnorm{A-ARX^*}\ge\fnorm{A-AR\wtd X}=\fnorm{A-\wtd A}$
 }
 \begin{rmk}
     \xb{compare the improvement with \cite{mmmw21}} for non-adaptive queries
