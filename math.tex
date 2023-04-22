@@ -110,6 +110,33 @@ $$
 $$
 Finally, the result follows $m=\sqrt{\mb E[\rho(x,V)^2]}+O(1)$. See \cite{tao09web} for details.
 }
+%---------------------------------------------------
+\subsection{Sketching}
+\begin{defn}[projection-cost-preserving\cite{musco2020projectioncostpreserving}]
+\label{proj_preserve_def}
+A matrix $\tilde{A}\in\rnm nm$ is an $(\epsilon,c,k)$ projection-cost-preserving sketching of $A\in\rnm nd$ if for any orthogonal projection $P\in\rn n$ with rank at most $k$, we have
+\[(1-\epsilon)\|A-PA\|_F^2\le\|\tilde{A}-P\tilde{A}\|_F^2+c\le (1+\epsilon)\|A-PA\|_F^2.\]
+\end{defn}
+
+\begin{thm}[simple sketching is projection-cost-preserving\cite{musco2020projectioncostpreserving}]
+    \label{proj_preserve_sk}
+    Let $S\in\rnm nm$ be a $i.i.d.$ standard Gaussian matrix. If $m\ge c(k+\log(1/\delta))/\epsilon^2$ for some large constant $c$, we have $\frac{1}{\sqrt{m}}AS$
+    is a $(\epsilon,0,k)$-projection-cost-preserving sketching of $A$ with probability at least $1-\delta$.
+\end{thm}
+\pfsk{\ref{proj_preserve_sk}}{
+
+}
+
+\begin{thm}[projection-cost-preserving makes projection approximation\cite{musco2020projectioncostpreserving}]
+    \label{proj_preserve_thm}
+    If  $\tilde{A}\in\rnm nm$ is an $(\epsilon,c,k)$ projection-cost-preserving sketching of $A\in\rnm nd$, then for any subset $\mc T$ of all
+    orthogonal projection with rank at most $k$, if we take a $\tilde{P}\in\mc T$ such that $\|\tilde{A}-\tilde{P}\tilde{A}\|_F^2\le\gamma\min_{P\in\mc T}\|\td A-P\td A\|_F^2$,
+    we have
+    \[
+    \fnorm{A-\td P A}^2\le \frac{1+\epsilon}{1-\epsilon}\gamma\min_{P\in\mc T}\fnorm{A-PA}^2+\frac{(1-\gamma)c}{1-\epsilon}.    
+    \]
+\end{thm}
+\pf{\ref{proj_preserve_thm}}{Direct calculation.}
 
 %---------------------------------------------------
 %---------------------------------------------------
@@ -157,6 +184,7 @@ d_{KL}(P,Q)=\frac{1}{2}\bbwr{
 }.
 \]
 \end{thm}
+\pfsk{\ref{gauss_kl}}{}
 
 \begin{thm}[Data processing inequality\cite{jpwz21}]
 \label{data_process}
@@ -165,9 +193,18 @@ For random variable $X,Y$ and any function $f$, we have
 d_{KL}(f(X),f(Y))\le d_{KL}(X,Y).
 \]
 \end{thm}
+\pfsk{\ref{data_process}}{}
+\begin{rmk}
+    There are also generalized data processing inequality for $f$-divergence.
+    \xb{see chenkun's talk about\cite{simchowitz2020tight}}
+\end{rmk}
+
 %---------------------------------------------------
 %---------------------------------------------------
 \section{Random matrices}
+
+%---------------------------------------------------
+\subsection{Non-asymptotic theory}
 In this section, we denote the distribution of random matrices $G\in\R^{n\times n}$ with $i.i.d.$ $\mc N(0,1)$ entries by $\mc N(n)$.
 \begin{thm}[Remaining randomness\cite{simchowitz2020tight}\cite{jpwz21}]
 \label{block_conditional} 
@@ -193,4 +230,39 @@ Let $G\sim\mc N(n)$. Then, for any $t\ge 0$ we have
 \end{thm}
 \pfsk{\ref{rmt_smax_concen}}{
     
+}
+
+\begin{thm}[(Upper Bound on Regression Error\cite{jpwz21}]
+\label{regress_sketch}
+Given $\delta\in(0,1/2)$ and matrices $A,B$ with $n$ rows and $rank(A)=k$. Let $S\in\rnm rn$ be a random matrix with $i.i.d.$ Gaussian $\mc N(0,\frac{1}{r})$.
+Let $\widetilde{X}=\arg\min_X\fnorm{S(AX-B)}$ and $X^*=\arg\min_X\fnorm{AX-B}$. Then, if $r=\Omega(k+\log(1/\delta))$, we have with probability at least $1-\delta$
+\[
+\fnorm{A\wtd{X}-B}\le O(1)\fnorm{AX^*-B}.    
+\]
+\end{thm}
+\pfsk{\ref{regress_sketch}}{
+
+}
+
+%---------------------------------------------------
+\subsection{Asymptotic theory}
+
+%---------------------------------------------------
+%---------------------------------------------------
+\section{Matrix analysis}
+\begin{lem}[\cite{mmmw21}]
+    \label{lra_tr_bound}
+For any PSD matrix $A$, we have $\|A-A_k\|_F\le\frac{tr(A)}{\sqrt{k}}$.  
+\end{lem}
+\pfm{lemma}{\ref{lra_tr_bound}}{
+$LHS^2 = \sum_{i=k+1}^n\lambda_i^2\le\frac{tr(A)}{k} \sum_{i=k+1}^n\lambda_i\le\frac{tr(A)^2}{k}.$
+}
+
+\begin{lem}
+\label{proj}
+Given matrices $A,B$, we have $\arg\min_X\snorm{AX-B}=\arg\min_X\fnorm{AX-B}=A^+B$ and  $\arg\min_Y\snorm{YA-B}=\arg\min_Y\fnorm{YA-B}=BA^+$,
+where $M^+$ is Moore–Penrose inverse of matrix $M$.
+\end{lem}
+\pf{\ref{proj}}{
+
 }

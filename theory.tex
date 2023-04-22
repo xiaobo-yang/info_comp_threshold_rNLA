@@ -81,9 +81,7 @@ Finally, use lower bound theorem \ref{spiked_whishart_lower_bound}, we have $m=\
 \end{enumerate}
 \end{rmk}
 
-\xb{\begin{enumerate}
-    \item check why are lower bounds only suitable for PSD matrix.
-\end{enumerate}}
+\xb{check why are lower bounds only suitable for PSD matrix.}
 
 Later, \cite{jpwz21} improve the lower bound with error probability $\delta$.
 \begin{thm}[Lower bound of non-adaptive queries with $\delta$-error\cite{jpwz21}]
@@ -115,11 +113,14 @@ The proof is divided into two parts according to whether $\epsilon$ is small or 
 \noindent Finally, combining these two bound by simple summation, we have our final lower bound.
 }
 
+
 \begin{rmk}
     Add spiked component $C\log^{3/2}(1/\delta)$ in the testing problem may be a standardized trick to analyze information-theoretic lower bound. Tuning the magnitude of the spiked component, we can show the phase transition by information-theoretic toolkit.
 \end{rmk}
 
-In this problem, the gap between informational and computational threshold is small(nearly matching).
+In this problem, the \textbf{gap between informational and computational threshold} is small(nearly matching), roughly an $O\bbr{\log\log(1/\delta)}$ constant.
+The intuition is to improve Hutchinston's estiator by sketching a low rank approximation of $A$ and estimating the remaining component by Hutchinson’s estiator, rather than estimate $A$ itself. 
+This induces a trade-off between sketching precision and Hutchinson’s estimation, optimizing the trade-off can reduce the variance.
 
 \bigskip
 \begin{breakablealgorithm}
@@ -130,18 +131,33 @@ In this problem, the gap between informational and computational threshold is sm
 \Ensure{Approximation to $tr(A)$.}
 \State Sample $S\in\rnm n{m/3},G\in\rnm n{m/3}$ with $i.i.d.$ $\mc N(0,1)$ entries.
 \State Compute an orthonormal basis $Q\in\rnm n{m/3}$ for the span of $AS$ via $QR$ decomposition.
-\State \textbf{return} $t=tr(Q^TAQ)+\frac{3}{m}tr(G^T(I-QQ^T)A(I-QQ^T)G)$.
+\State \textbf{return} $t=tr(AQQ^T)+\frac{3}{m}tr(G^TA(I-QQ^T)G)$.
 \end{algorithmic}
 \end{breakablealgorithm}
 \bigskip
+
+\begin{rmk}
+Here, we take the randomness of Gaussian\cite{jpwz21}, while the original verision is rademacher's $\pm1$ variable\cite{mmmw21}. Note that,
+Hutchinson's analysis works for general mean zero sub-Gaussian random variables.
+\end{rmk}
 
 \begin{thm}[Upper bound of adaptive queries\cite{mmmw21}]
 \label{tr_est_ada_alg}
 Let $m=O\bbr{\frac{\sqrt{\log(1/\delta)}}{\epsilon}+\log(1/\delta)}$. Then with probability at least $1-\delta$, Hutch++ yields an estimation $t$ such that $(1-\epsilon)tr(A)\le t \le (1+\epsilon)tr(A)$.
 \end{thm}
 \pfsk{\ref{tr_est_ada_alg}}{
-First,
+First, note that $t=tr(AQQ^T)+H_{m/3}(A(I-QQ^T))$, where $H_l(\cdot)$ is Hutchinson’s Estimator(definition \ref{hutchinson_est}). 
+Denote $\Delta:=A(I-QQ^T)$ and $\tilde{A}=AQQ^T$.
+Thus, if $m=O\bbr{\log(1/\delta)}$, by theorem \ref{hutchinson_bound} we have  $|t-tr(A)|=|tr(\Delta)-H_{m/3}(\Delta)|\lesssim \sqrt{\frac{\log(1/\delta)}{m/3}}\|\Delta\|_F$ with probability(of $G$) at least $1-\delta$.
+
+Then, if $m=O\bbr{k+\sqrt{\log(1/\delta)}}$, by theroem \ref{proj_preserve_sk} we have,
+$AS/\sqrt{m}$ is a  $(1/9, 0, k)$-projection-cost-preserving of $A$(definition \ref{proj_preserve_def})
+with probability(of $S$) at least $1-\delta$, and by theorem \ref{proj_preserve_def},  since $\|AS-ASQ_kQ_k^T\|= \|AS-(AS)_k\|_F$, we have $\|\Delta\|_F\le\|A-AQ_kQ_k^T\|_F\le\sqrt{\frac{1+1/9}{1-1/9}}\|A-A_k\|_F\le\sqrt{2}\|A-A_k\|_F$
+and thus $\|\Delta\|_F\le\sqrt{2}\|A-A_k\|_F$ with probability(of $S$) at least $1-\delta$.
+
+Therefore, if $k=\frac{\sqrt{\log(1/\delta)}}{\epsilon}$ and $m=O\bbr{\frac{\sqrt{\log(1/\delta)}}{\epsilon}+\log(1/\delta)}$, use lemma \ref{lra_tr_bound}, we have $|t-tr(A)|\lesssim\sqrt{\frac{\log(1/\delta)}{mk}}tr(A)\lesssim\epsilon\cdot tr(A)$ $w.h.p.$. 
 }
+
 
 \bigskip
 \begin{breakablealgorithm}
@@ -152,8 +168,7 @@ First,
 \Ensure{Approximation to $tr(A)$.}
 \State Fix constants $c_1,c_2,c_3$ such that $c_1<c_2$ and $c_1+c_2+c_3=1$.
 \State Sample $S\in\rnm n{c_1m},R\in\rnm n{c_2m},G\in\rnm n{c_3m}$ with $i.i.d.$ $\mc N(0,1)$ entries.
-\State Let $Z=AR,W=AS$
-\State \textbf{return} $t=tr((S^TZ)^+(W^TZ))+\frac{1}{c_3m}(tr(G^TAG)-tr(G^TZ(S^TZ)^+W^TG))$.
+\State \textbf{return} $t=tr(AR(S^TAR)^+S^TA)+\frac{1}{c_3m}tr(G^T(A-[AR(S^TAR)^+S^TA])G)$\footnote{Here $M^+$ means Moore-Penrose pseudoinverse of $M$}.
 \end{algorithmic}
 \end{breakablealgorithm}
 \bigskip
@@ -163,8 +178,28 @@ First,
 Let $m=O\bbr{\frac{\sqrt{\log(1/\delta)}}{\epsilon}+\log(1/\delta)}$. Then with probability at least $1-\delta$, NA-Hutch++ yields an estimation $t$ such that $(1-\epsilon)tr(A)\le t \le (1+\epsilon)tr(A)$.
 \end{thm}
 \pfsk{\ref{tr_est_nada_alg}}{
-First,
+Similar to the adaptive one, here we divide $A$ into $\tilde{A}:=AR(S^TAR)^+S^TA$ and $\Delta:=A-\td A$. Based on the proof of theorem \ref{tr_est_ada_alg},
+it suffices to show $\|\Delta\|_F=O(1)\|A-A_k\|_F$ $w.h.p.$ and then we can obtain exact the same bound as before. Formally, we will prove
+if $m=O(k+\log(1/\delta))$, then with probability at least $1-\delta$ we have $\|\Delta\|_F=O(1)\|A-A_k\|_F$. 
+
+Basic ideal is to use theorem \ref{regress_sketch} to do column and row sketching for regression respectively.
+
+First, note that $\wtd X:= (S^TAR)^+S^TA=\arg\min_X\fnorm{S^T(ARX-A)}$ by theorem \ref{proj}, thus 
+if $c_1 m=O(c_2 m+\log(1/\delta))$
+we have $\|A-\wtd A\|_F\le O(1)\fnorm{A-ARX^*}$, where
+$X^*=\arg\min_X\fnorm{ARX-A}$ with probability(of $S$) at least $1-\delta$.
+
+Then, by definition we have $\fnorm{A-ARX^*}\le\fnorm{A-AR(A_kR)^+A_k}=\fnorm{A-\bar{X}A_k}$. Note that $\bar{X}:=\arg\min_X\fnorm{(XA_k-A)R}=AR(A_kR)^+$, 
+thus if $c_2 m=O(k+\log(1/\delta))$
+we have $\fnorm{A-\bar{X}A_k}\le O(1)\fnorm{A-AA_k^+A_k}=O(1)\fnorm{A-A_k}$ with probability(of $R$) at least $1-\delta$.
+
+Finally, if $m=O(k+\log(1/\delta))$ we have $\fnorm{A-\wtd A}\le O(1)\fnorm{A-ARX^*}\le O(1)\fnorm{A-\bar{X}A_k}\le O(1)\fnorm{A-A_k}$ $w.h.p.$
 }
+\begin{rmk}
+    \xb{compare the improvement with \cite{mmmw21}} for non-adaptive queries
+\end{rmk}
+
+\xb{even though the bound is tight for Gaussian, what about other randomness, for example rademacher?}
 
 %---------------------------------------------------
 \subsection{Eigenvalue estimation}
