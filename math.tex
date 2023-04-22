@@ -138,6 +138,22 @@ A matrix $\tilde{A}\in\rnm nm$ is an $(\epsilon,c,k)$ projection-cost-preserving
 \end{thm}
 \pf{\ref{proj_preserve_thm}}{Direct calculation.}
 
+\begin{thm}[(Upper Bound on Regression Error\cite{jpwz21}]
+    \label{regress_sketch}
+    Given $\delta\in(0,1/2)$ and matrices $A,B$ with $n$ rows and $rank(A)=k$. Let $S\in\rnm rn$ be a random matrix with $i.i.d.$ Gaussian $\mc N(0,\frac{1}{r})$.
+    Let $\widetilde{X}=\arg\min_X\fnorm{S(AX-B)}$ and $X^*=\arg\min_X\fnorm{AX-B}$. Then, if $r=\Omega(k+\log(1/\delta))$, we have with probability at least $1-\delta$
+    \[
+    \fnorm{A\wtd{X}-B}\le O(1)\fnorm{AX^*-B}.    
+    \]
+\end{thm}
+\begin{rmk}
+\cite{cw09} shows what $O(1)$ is, while the randomness there is rademacher's variable.
+\end{rmk}
+
+\pfsk{\ref{regress_sketch}}{
+
+}
+
 %---------------------------------------------------
 %---------------------------------------------------
 \section{Statistical distance}
@@ -232,17 +248,7 @@ Let $G\sim\mc N(n)$. Then, for any $t\ge 0$ we have
     
 }
 
-\begin{thm}[(Upper Bound on Regression Error\cite{jpwz21}]
-\label{regress_sketch}
-Given $\delta\in(0,1/2)$ and matrices $A,B$ with $n$ rows and $rank(A)=k$. Let $S\in\rnm rn$ be a random matrix with $i.i.d.$ Gaussian $\mc N(0,\frac{1}{r})$.
-Let $\widetilde{X}=\arg\min_X\fnorm{S(AX-B)}$ and $X^*=\arg\min_X\fnorm{AX-B}$. Then, if $r=\Omega(k+\log(1/\delta))$, we have with probability at least $1-\delta$
-\[
-\fnorm{A\wtd{X}-B}\le O(1)\fnorm{AX^*-B}.    
-\]
-\end{thm}
-\pfsk{\ref{regress_sketch}}{
 
-}
 
 %---------------------------------------------------
 \subsection{Asymptotic theory}
@@ -264,5 +270,5 @@ Given matrices $A,B$, we have $\arg\min_X\snorm{AX-B}=\arg\min_X\fnorm{AX-B}=A^+
 where $M^+$ is Moore–Penrose inverse of matrix $M$.
 \end{lem}
 \pf{\ref{proj}}{
-
+\xb{see wiki of Moore–Penrose inverse, which shows $AA^+,A^+A$ are both orthogonal projections}
 }
