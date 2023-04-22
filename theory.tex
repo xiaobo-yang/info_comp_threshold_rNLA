@@ -182,7 +182,7 @@ Similar to the adaptive one, here we divide $A$ into $\tilde{A}:=AR(S^TAR)^+S^TA
 it suffices to show $\|\Delta\|_F=O(1)\|A-A_k\|_F$ $w.h.p.$ and then we can obtain exact the same bound as before. Formally, we will prove
 if $m=O(k+\log(1/\delta))$, then with probability at least $1-\delta$ we have $\|\Delta\|_F=O(1)\|A-A_k\|_F$. 
 
-Basic ideal is to use theorem \ref{regress_sketch} to do column and row sketching for regression respectively.
+Basic idea is to use theorem \ref{regress_sketch} to do column and row sketching for regression respectively.
 
 First, note that $\fnorm{A-A_k}=\min_X\fnorm{A-A_kX}$. Consider regression sketching $\bar{X}=\arg\min_X\fnorm{R^T(A-A_kX)}=(R^TA_k)^+R^TA$,
 then if $c_2 m=O(k+\log(1/\delta))$, we have $O(1)\fnorm{A-A_k}\ge\fnorm{A-A_k\bar{X}}$  with probability(of $R$) at least $1-\delta$.
