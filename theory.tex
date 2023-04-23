@@ -8,6 +8,7 @@ We interact with the algorithm only through inputting query vectors and outputti
 
 %---------------------------------------------------
 \subsection{Trace estimation}
+\subsubsection{Informational threshold}
 \begin{prob}[trace estimation\cite{mmmw21}]
 \label{tr_est}
 Given a matrix $A$, we input query vectors $r_1,...,r_m$ and output product $Ar_1,...Ar_m$ to estimate $tr(A)$. 
@@ -81,7 +82,6 @@ Finally, use lower bound theorem \ref{spiked_whishart_lower_bound}, we have $m=\
 \end{enumerate}
 \end{rmk}
 
-\xb{check why are lower bounds only suitable for PSD matrix.}
 
 Later, \cite{jpwz21} improve the lower bound with error probability $\delta$.
 \begin{thm}[Lower bound of non-adaptive queries with $\delta$-error\cite{jpwz21}]
@@ -118,6 +118,84 @@ The proof is divided into two parts according to whether $\epsilon$ is small or 
     Add spiked component $C\log^{3/2}(1/\delta)$ in the testing problem may be a standardized trick to analyze information-theoretic lower bound. Tuning the magnitude of the spiked component, we can show the phase transition by information-theoretic toolkit.
 \end{rmk}
 
+Later, \cite{woodruff2022optimal} shows lower bound for general schatten $p$ norm.
+\begin{thm}[Lower bound of adaptive queries, general matrices and schatten $p$ norm\cite{woodruff2022optimal}]
+\label{tr_est_ada_schatten_p}
+Let $A$ be a square matrix. If $r_1,...,r_m$ are adaptive,
+then we need at least, 
+\begin{itemize}
+    \item (bit complexity) for queries with entries specified by $b$ bits(integers range in $[-2^b,2^b]$),
+    \begin{itemize}
+        \item ($p\in[1,2]$) $m=\Omega\bbr{\frac{1}{\epsilon^p(b+\log(1/\epsilon))}+\frac{\log(1/\delta)}{b+\log\log(1/\delta)}}$ 
+        \item (any $p$) $m=\Omega\bbr{\frac{\log(1/\delta)}{b+\log\log(1/\delta)}}$ 
+    \end{itemize}
+    \item (RAM model) for $\epsilon\in(0,\log^{1/2-1/p}(1/\delta))$,
+    \begin{itemize}
+        \item ($p\in[1,2]$) $m=\Omega\bbr{\bbr{\frac{\sqrt{\log(1/\delta)}}{\epsilon}}^p}$ 
+    \end{itemize}
+\end{itemize}
+queries  to output an estimate $t$ so that, with probability at least $1-\delta$, $|t-tr(A)|\le \epsilon \|A\|_p$. 
+\end{thm}
+\pfsk{\ref{tr_est_ada_schatten_p}}{
+
+}
+
+\begin{thm}[Lower bound of non-adaptive queries, general matrices and schatten $p$ norm\cite{woodruff2022optimal}]
+\label{tr_est_nada_schatten_p}
+Let $A$ be a square matrix. If $r_1,...,r_m$ are adaptive,
+then we need at least, 
+\begin{itemize}
+    \item (bit complexity) for queries with entries specified by $b$ bits(integers range in $[-2^b,2^b]$),
+    \begin{itemize}
+        \item (any $p$) $m=\Omega\bbr{\bbr{\frac{\sqrt{\log(1/\delta)}}{\epsilon}}^p\frac{1}{b+\log(1/\epsilon)}}$ 
+    \end{itemize}
+    \item (RAM model) for $\epsilon\in(0,\log^{1/2-1/p}(1/\delta))$,
+    \begin{itemize}
+        \item ($p\in[1,2]$) $m=\Omega\bbr{\bbr{\frac{\sqrt{\log(1/\delta)}}{\epsilon}}^p+\frac{\log(1/\delta)}{\log\log(1/\delta)}}$ 
+    \end{itemize}
+\end{itemize}
+queries  to output an estimate $t$ so that, with probability at least $1-\delta$, $|t-tr(A)|\le \epsilon \|A\|_p$. 
+\end{thm}
+\pfsk{\ref{tr_est_nada_schatten_p}}{
+        
+}
+
+A more genral version of trace estimation problem is its dynamic extension.
+\begin{prob}[Dynamic trace estimation\cite{woodruff2022optimal}]
+\label{tr_est_dynamic_prob}
+Let $A_1,A_2,...,A_m$ be square matrices such that
+\begin{itemize}
+    \item $\|A_i\|_p\le 1$ for all $i$.
+    \item $\|A_{i+1}-A_i\|_p\le\alpha<1$ for all $i\le m-1$.
+\end{itemize}
+For any $\epsilon,\delta>0$, estimate $tr(A_i)$ by $t_i$ with $\mb P(|t_i-tr(A_i)|>\epsilon)\le\delta$.
+\end{prob}
+
+\begin{cor}[\xb{general case(adaptive)}Lower bound of dynamic trace estimation\cite{woodruff2022optimal}]
+\label{tr_est_dynamic}
+To solve problem \ref{tr_est_dynamic_prob}, we need at least
+\begin{itemize}
+    \item (bit complexity) for queries with entries specified by $b$ bits(integers range in $[-2^b,2^b]$),
+    \item \begin{itemize}
+        \item ($p\in[1,2]$) $m=\Omega\bbr{\alpha m\bbr{\frac{1}{\epsilon^p(b+\log(1/\epsilon))}+\frac{\log(1/\delta)}{b+\log\log(1/\delta)}}}$ 
+        \item ($p\in[1,2]$, $\epsilon,\delta\in(0,1/4)$) $m=\Omega\bbr{m\min\bbr{1,\frac{\alpha}{\epsilon}}\frac{\log(1/\delta)}{b+\log\log(1/\delta)}}$
+    \end{itemize}
+    \item (RAM model) for $\epsilon\in(0,\log^{1/2-1/p}(1/\delta))$,
+    \begin{itemize}
+        \item ($p\in[1,2]$) $m=\Omega\bbr{\alpha m\bbr{\bbr{\frac{\sqrt{\log(1/\delta)}}{\epsilon}}^p}}$
+    \end{itemize}   
+\end{itemize}
+queries of matrix-vector product oracles.
+\end{cor}
+\pfskm{corollary}{\ref{tr_est_dynamic}}{
+It's just a static-to-dynamic reduction\cite{dharangutte2021dynamic} combining adaptive case static trace estimation(theorem \ref{tr_est_ada_schatten_p})
+\begin{lem}[static-to-dynamic reduction\cite{dharangutte2021dynamic}]
+\label{sta_to_dyn}
+\end{lem}
+}
+
+%---------------------------------------------------
+\subsubsection{Computational threshold}
 In this problem, the \textbf{gap between informational and computational threshold} is small(nearly matching), roughly an $O\bbr{\log\log(1/\delta)}$ constant.
 The intuition is to improve Hutchinston's estiator by sketching a low rank approximation of $A$ and estimating the remaining component by Hutchinson’s estiator, rather than estimate $A$ itself. 
 This induces a trade-off between sketching precision and Hutchinson’s estimation, optimizing the trade-off can reduce the variance.
@@ -198,6 +276,28 @@ Finally, if $m=O(k+\log(1/\delta))$ and $c_1>c_2$ we have $O(1)\fnorm{A-A_k}\ge 
 \end{rmk}
 
 \xb{even though the bound is tight for Gaussian, what about other randomness, for example rademacher?}
+
+\xb{add dynamic alg here}
+
+\begin{thm}[Upper bound, general schatten $p$ norm, dynamic case\cite{woodruff2022optimal}]
+\label{tr_est_alg_schatten_p}
+For any $\epsilon,delta>0$, the algroithm \xb{(add ref)} solves the problem \ref{tr_est_dynamic_prob} using at most
+\begin{itemize}
+    \item ($p\in[1,2]$) $m=O\bbr{(m\alpha +1)\log^{1+p}(1/\alpha)\bbr{\frac{\sqrt{\log(1/(\alpha\delta))}}{\epsilon}}^p+m\log(1/(\alpha\delta))}$
+    \xb{(thm B.2 in \cite{woodruff2022optimal})}
+    \item ($p=1$) $m=O\bbr{(m\alpha +1)\log^{2}(1/\alpha)\bbr{\frac{\sqrt{\log(1/(\alpha\delta))}}{\epsilon}}+m\min(1,\alpha/\epsilon)\log(1/(\alpha\delta))}$
+    \xb{(thm 3.1 in \cite{woodruff2022optimal})}
+\end{itemize}
+(adaptive) queries of matrix-vector oracles.
+\end{thm}
+\pfsk{\ref{tr_est_alg_schatten_p}}{
+}
+\begin{rmk}
+\begin{enumerate}
+    \item For $m=1$(static case), the upper bound match the lower bound up to logarithm of the parameters.
+    \item For $p=1$, the first condition can be relaxed to $\|A_1\|_*\le 1$. See theorem B.3 in \cite{woodruff2022optimal}.
+\end{enumerate}
+\end{rmk}
 
 %---------------------------------------------------
 \subsection{Eigenvalue estimation}
