@@ -30,7 +30,7 @@ $$
 
 %---------------------------------------------------
 %---------------------------------------------------
-\section{Concentration inequalities}
+\section{Concentration and anti-concentration inequalities}
 
 
 %---------------------------------------------------
@@ -48,6 +48,20 @@ v(A, B) \geq(1-\eta) v\left(\mathbb{R}^n, \mathbb{R}^n\right)=(1-\eta) n
 $$
 \end{thm}
 It's continuous version of \eqref{anti_concen_ghd}, which is more general to yield corruption bound for communication problem with continuous domain $\mc X,\mc Y$ and rectangle $R$.
+
+There is an similar anti-concentration result in \cite{chakrabarti2012information}, where they study ORT problem.
+\begin{thm}[Anti-concentration lemma 4.1 in \cite{chakrabarti2012information}]
+\label{ort_anti_concen} 
+For sufficiently large $n$ and $b\ge 66$, let $\epsilon=1-\Phi(2.01b)$. Then there exists $\delta>0$ 
+such that for all $A,B\subseteq\{\pm1\}^n$ with $\min\{|A|,|B|\}\ge2^{n-\delta n}$, we have
+\[
+\mb P_{(X,Y)\sim Unif\{A\times B\}}[|\langle X,Y \rangle|>b\sqrt{n}]\ge \epsilon.    
+\]
+\end{thm}
+\begin{rmk}
+This lemma incorporates lemma 3.3 in \cite{sherstov2012communication}(key of theorem \ref{cor_bound}) as a speacial case of $b=1/4$.
+Here $b$ is general but the analysis in \cite{sherstov2012communication} fails when $b>1$.
+\end{rmk}
 %---------------------------------------------------
 \subsection{Hutchinson's trace estimator}
 A simple estimator of trace of matrix by monte carlo method and we use only matrix-vector product oracle.
@@ -62,7 +76,7 @@ where $G=[g_1,...,g_m]\in\R^{d\times m}$ is a Gaussian matrix with $i.i.d.$ $\mc
 
 \begin{thm}[Hutchinson analysis\cite{mmmw21}]
 \label{hutchinson_bound}
-Let $A \in \mathbb{R}^{d \times d}, \delta \in(0,1 / 2], \ell \in \mathbb{N}$. Let $\mathrm{H}_{\ell}(A)$ be the $\ell$-query Hutchinson estimator defined in (1), implemented with mean 0, i.i.d. sub-Gaussian random variables with constant sub-Gaussian parameter. For fixed constants $c, C$, if $\ell>c \log (1 / \delta)$, then with probability $\geq 1-\delta$,
+Let $A \in \mathbb{R}^{d \times d}, \delta \in(0,1 / 2], \ell \in \mathbb{N}$. Let $\mathrm{H}_{\ell}(A)$ be the $\ell$-query Hutchinson estimator defined above, implemented with mean 0, i.i.d. sub-Gaussian random variables with constant sub-Gaussian parameter. For fixed constants $c, C$, if $\ell>c \log (1 / \delta)$, then with probability $\geq 1-\delta$,
 $$
 \left|\mathrm{H}_{\ell}(A)-\operatorname{tr}(A)\right| \leq C \sqrt{\frac{\log (1 / \delta)}{\ell}}\|A\|_F .
 $$

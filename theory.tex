@@ -35,7 +35,8 @@ Then, if we estimate $tr(A)$ with error $\epsilon=1/\sqrt{n}$, we have
 \end{align*}
 which means we can solve GHD problem by simply compare $\widehat{tr(A)}$ with $2n-2$.
 
-Finally, use lower bound of GHD. The reduction above cost $O(m\sqrt{n}(\log n + b))=\Omega(n)$ bits by Theorem \ref{ghd_lower_bound}, thus we have $m=\Omega\bbr{\frac{1}{\epsilon(b+\log(1/\epsilon))}}$.
+Finally, use lower bound of GHD. The reduction above cost $O(m\sqrt{n}(\log n + b))=\Omega(n)$ bits by Theorem \ref{ghd_lower_bound}.
+Note that $n=1/\epsilon^2$, thus we have $m=\Omega\bbr{\frac{1}{\epsilon(b+\log(1/\epsilon))}}$.
 }
 
 \begin{thm}[Lower bound of non-adaptive queries\cite{mmmw21}]
@@ -118,7 +119,7 @@ The proof is divided into two parts according to whether $\epsilon$ is small or 
     Add spiked component $C\log^{3/2}(1/\delta)$ in the testing problem may be a standardized trick to analyze information-theoretic lower bound. Tuning the magnitude of the spiked component, we can show the phase transition by information-theoretic toolkit.
 \end{rmk}
 
-Later, \cite{woodruff2022optimal} shows lower bound for general schatten $p$ norm.
+Later, \cite{woodruff2022optimal} shows lower bound for general schatten $p$ norm in both bit complexity(consider total complexity of communication of bits) and RAM model(only consider number of queries).
 \begin{thm}[Lower bound of adaptive queries, general matrices and schatten $p$ norm\cite{woodruff2022optimal}]
 \label{tr_est_ada_schatten_p}
 Let $A$ be a square matrix. If $r_1,...,r_m$ are adaptive,
@@ -137,8 +138,70 @@ then we need at least,
 queries  to output an estimate $t$ so that, with probability at least $1-\delta$, $|t-tr(A)|\le \epsilon \|A\|_p$. 
 \end{thm}
 \pfsk{\ref{tr_est_ada_schatten_p}}{
+For bit complexity, the proof is based on communication problem of approximate orthogonality and gap inequality
+\begin{itemize}
+    \item ($p\in[1,2]$) 
+    \begin{enumerate}
+        \item First, we show any algrotihm $\mc A$ solve trace estimation of a matrix with size $n$, with error $\epsilon\|\cdot\|_p$ and probability at least $1-\delta$, 
+        can explicitly solve a $ORT_{b,n^2}$ problem \ref{ort_prob}. To do that, assume Alice has $a\in\pmn{n^2}$ and Bob has $b\in\pmn{n^2}$. Reshape the vector into two matrices
+        $A,B\in\rn{n}$ such that $\langle a,b\rangle=tr(AB)$. Now the task is to compare $|tr(AB)|$ with $bn$.
+        
+        In each round, we give a query $q_i$ 
+        and compute $q_i A$ and send it to Bob, then Bob
+        compute $q_iAB$ and send it back to alice. Assume that after $r(n)$ rounds, we got a good trace estimation $t$ through $q_1AB,...,q_{r(n)}AB$.
+        Formally, we have
+        \[\mb P_{\mc A}(|t-tr(AB)|\ge\epsilon\|AB\|_p|A,B)\le\delta.\]
 
+        \item Then, assume $a,b\sim Unif\{ \pmn {n^2}\}$ independently, by Holder's inequality for $p\in[1,2]$ and Markovian's inequality we have
+        $\mb P_{A,B}(\epsilon\|AB\|_p\ge \epsilon\sqrt{t}n^{1/p+1})\le \mb P_{A,B}(\epsilon\|AB\|_F\ge\epsilon\sqrt{t}n^{3/2})\le 1/t,\forall t> 0$.
+        Therefore, take $\delta', t$ such that $1/\delta' = t=\bbr{\frac{1}{\epsilon n^{1/p}}\frac{b}{10}}^2$, we have
+        $\mb P_{A,B}(\epsilon\|AB\|_p\ge \frac{bn}{10})\le\delta'$ and thus
+        \[\mb P_{\mc A,A,B}\bbr{|t-\langle a,b \rangle|\ge  \frac{bn}{10}}\le \delta + \delta'.\]
+        By this, we can solve $ORT_{b,n^2}$ $w.h.p.$ by comparing $|t|$ with $bn$.
+
+        \item  Finally, it's easy to check bit complexity each round is $O(\log(2^b n))=O(b+\log n)$. Therefore, by theorem \ref{ort_complexity},
+        we have $r(n)\cdot O(n(b+\log n))=\Omega(n^2)$, thus $r(n)=\Omega\bbr{\frac{n}{b+\log n}}$. Since $\delta'=O(1)$, the analysis above only
+        works for $n=O(1/\epsilon^p)$, thus the best lower bound we can achieve by this method is $r(1/\epsilon^p)=\Omega\bbr{\frac{1}{\epsilon^p(b+\log(1/\epsilon))}}$.
+        Combine this and the results below we obtain the final bound.
+    \end{enumerate}
+    \item (any $p$)
+    \begin{enumerate}
+        \item First, note that any algrotihm $\mc A$ solve trace estimation of a matrix with size $n$, 
+        with error $\epsilon\|\cdot\|_p$ and probability at least $1-\delta$ can explicitly solve a problem \ref{eq_prob} $EQ_n$. 
+        To do that, assume Alice has $a\in\{0,1\}^n$ and Bob has $b\in\{0,1\}^n$. Consider a matrix $A=(a-b)(a-b)^T$ and we use $\mc A$ to estimate $tr(A)$. 
+        Then no matter what $\epsilon$ is the task is to detect whether $t=0$.
+        Assume the algorithm need at most $r(n)$ queries to solve that.
+        
+        \item Then, note that if $a=b$, then for any sequence of queries $q_1,q_2,...q_{r(n)}$, the oracles $Aq_i$ will always return $0$. 
+        But once there is one query $q$ such that $Aq\neq 0$, we can stop the algorithm. Thus there is no difference between adaptive and non-adaptive queries(we don't need adaptive any more).
+        Thus it suffices to consider a matrix $Q$ with (non-adaptive) queries as its columns. It suffices to compute whether $Qx=Qy$. So it suffices to let Alice send $Qx$ to Bob
+        and the bit complexity is $O(r(n)(b+\log n))$.
+        
+        \item Finally, by theorem \ref{eq_complexity}, we have $r(n)=\Omega\bbr{\frac{n}{b+\log n}}$. In order to solve $EQ_n$ for all possible $a,b$ simultaneously,
+        we require $n=O(\log(1/\delta)$ by union bound. Thus the best lower bound we can achive by this method is $\Omega\bbr{\frac{\log(1/\delta)}{b+\log\log(1/\delta)}}$.
+        
+        \xb{not so rigorously here, since this method is a random protocol to solve $EQ_n$, but theorem \ref{eq_complexity} is for deterministic protocol}
+    \end{enumerate} 
+For RAM model, the proof is based on remainning randomness of conditional matrix-vector products(theorem \ref{block_conditional})
+\begin{enumerate}
+    \item First, by Yao's principle(theorem \ref{yaoprin}), it suffices to construct a hard distribution. Here we take random matrix
+     $W=(G+G^T)/2\in\rn n$ such that $G$ is $i.i.d.$ standard gaussian matrix. By theorem \ref{rmt_smax_concen} and Holder's inequality
+     , $\|W\|_p\lesssim n^{1/2+1/p}$ $w.h.p.$ for $p\in[1,2]$ and $n=\Omega(\log(1/\delta))$. Therefore, 
+     for any algorithm $\mc A$ that
+     can estimate the trace, using $m$ queries to output an estimation $t$, with error $\epsilon$ and failure probability $\delta$, we have
+     \[
+        1-\delta\le \mb P_{\mc A, W}(|t-tr(W)|\le\epsilon\|W\|_p)\le \mb P_{\mc A, W}(|t-tr(W)|\lesssim\epsilon n^{1/2+1/p}).   
+     \]
+     \item Then, assume queries we need to estimate $tr(W)$ is $m<n/2$, then by theorem \ref{block_conditional} there is a submatrix $\wtd W$
+     whose trace $tr(\wtd W)$ has variance of $n-m=\Omega(n)$ even conditioned on all matrix-vector queries and oracles. Thus, such an algorithm $\mc A$ must satisfy
+     $$\mb P_{\mc A, W}(|t-tr(W)|\gtrsim \sqrt{\log(1/\delta)}n^{1/2})=\Omega(\delta).$$
+     \item Finally, combine both inequalities above, we need $\epsilon n^{1/2+1/p}=\Omega(\sqrt{\log(1/\delta)}n^{1/2})$, which yields $n=\Omega\bbr{\bbr{\frac{\sqrt{\log(1/\delta}}{\epsilon}}^p}$.
+    
+\end{enumerate}
+    
+\end{itemize}
 }
+
 
 \begin{thm}[Lower bound of non-adaptive queries, general matrices and schatten $p$ norm\cite{woodruff2022optimal}]
 \label{tr_est_nada_schatten_p}
@@ -157,7 +220,18 @@ then we need at least,
 queries  to output an estimate $t$ so that, with probability at least $1-\delta$, $|t-tr(A)|\le \epsilon \|A\|_p$. 
 \end{thm}
 \pfsk{\ref{tr_est_nada_schatten_p}}{
-        
+For bit complexity, the proof is based on communication problem of augmented indexing 
+
+\xb{However, the original proof in \cite{woodruff2022optimal} is in a mess, maybe it's wrong, need to check [JW13]}
+\begin{enumerate}
+    \item First, 
+\end{enumerate}
+
+For RAM model, the proof is similar to \cite{jpwz21}
+\begin{enumerate}
+    \item First, 
+\end{enumerate} 
+
 }
 
 A more genral version of trace estimation problem is its dynamic extension.
@@ -275,7 +349,7 @@ Finally, if $m=O(k+\log(1/\delta))$ and $c_1>c_2$ we have $O(1)\fnorm{A-A_k}\ge 
     \xb{compare the improvement with \cite{mmmw21}} for non-adaptive queries
 \end{rmk}
 
-\xb{even though the bound is tight for Gaussian, what about other randomness, for example rademacher?}
+\xb{even though the bound is tight for Gaussian, what about other randomness, for example rademacher?\cite{mmmw21} uses rademacher}
 
 \xb{add dynamic alg here}
 
