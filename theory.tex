@@ -302,7 +302,7 @@ First, note that $t=tr(AQQ^T)+H_{m/3}(A(I-QQ^T))$, where $H_l(\cdot)$ is Hutchin
 Denote $\Delta:=A(I-QQ^T)$ and $\tilde{A}=AQQ^T$.
 Thus, if $m=O\bbr{\log(1/\delta)}$, by theorem \ref{hutchinson_bound} we have  $|t-tr(A)|=|tr(\Delta)-H_{m/3}(\Delta)|\lesssim \sqrt{\frac{\log(1/\delta)}{m/3}}\|\Delta\|_F$ with probability(of $G$) at least $1-\delta$.
 
-Then, if $m=O\bbr{k+\sqrt{\log(1/\delta)}}$, by theroem \ref{proj_preserve_sk} we have,
+Then, if $m=O\bbr{k+\log(1/\delta)}$, by theroem \ref{proj_preserve_sk} we have,
 $AS/\sqrt{m}$ is a  $(1/9, 0, k)$-projection-cost-preserving of $A$(definition \ref{proj_preserve_def})
 with probability(of $S$) at least $1-\delta$, and by theorem \ref{proj_preserve_def},  since $\|AS-ASQ_kQ_k^T\|= \|AS-(AS)_k\|_F$, we have $\|\Delta\|_F\le\|A-AQ_kQ_k^T\|_F\le\sqrt{\frac{1+1/9}{1-1/9}}\|A-A_k\|_F\le\sqrt{2}\|A-A_k\|_F$
 and thus $\|\Delta\|_F\le\sqrt{2}\|A-A_k\|_F$ with probability(of $S$) at least $1-\delta$.
@@ -376,3 +376,12 @@ For any $\epsilon,delta>0$, the algroithm \xb{(add ref)} solves the problem \ref
 %---------------------------------------------------
 \subsection{Eigenvalue estimation}
 \cite{braverman2021gradient}
+
+
+%---------------------------------------------------
+\subsection{Matrix maximal entry estimation}
+\begin{prob}[trace estimation\cite{mmmw21}]
+\label{mt_max_est}
+Given a matrix $A$, we input query vectors $r_1,...,r_m$ and output product $Ar_1,...Ar_m$ to estimate $\max_{i,j}A_{i,j}$. 
+\end{prob}
+
