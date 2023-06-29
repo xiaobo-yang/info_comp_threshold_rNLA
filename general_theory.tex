@@ -360,6 +360,7 @@ We say that $P$ and $P'$ have equivalent complexity if $P \leq_p P'$ and $P' \le
 Compared to worst-case reduction, average-case reduction is significantly more complex because it involves not only mapping between structurally similar objects, but also mapping between distributions such that their statistical distances are small.
 
 \begin{lem}[Total variation]
+    \label{tv_def}
     Given two distribution $\mu$ and $\nu$, the total variation distance $d_{TV}(\mu,\nu)$ has the following equivalent definitions
     \begin{align*}
         d_{TV}(\mu,\nu) &= \frac{1}{2}\|\mu-\nu\|_1 
@@ -368,6 +369,11 @@ Compared to worst-case reduction, average-case reduction is significantly more c
                         = \inf_{(X,Y),X\sim\mu,Y\sim\nu}\mb{P}(X\neq Y)\\
                         &=1- \min_{\phi:\phi\text{ is a testing statistics}}\{\mu(\phi\text{ indicates }\nu)+\nu(\phi\text{ indicates }\mu)\}.
     \end{align*}
+\end{lem}
+
+\begin{lem}
+    \label{tv_coup}
+    If random variables $X,Y$ satisfy that $d_{TV}(X,Y)\le\delta$, then there exists a coupling distribution $\mc P$ such that $\mb P_{(X,Y)\sim\mc P}(X=Y)\ge 1-\delta$.
 \end{lem}
 
 \begin{defn}[Reduction]
@@ -549,6 +555,416 @@ An open problem is to consider the equivalence of the problem, that is, reductio
 %---------------------------------------------------
 %---------------------------------------------------
 \subsection{Failure of general algorithms}
+
+%---------------------------------------------------
+\subsubsection{Sum-of-Squares}
+This section is mainly based on \cite{sos_1}\cite{sos_2}\cite{sos_schramm}.
+
+When proving the identifiability of a hypothesis testing problem, it is common to use constructive proof by constructing a statistic that demonstrates the identifiability. However, these statistics may not be computable in polynomial time.
+For example, the searching statistics $T_{search}=\frac{1}{k}\max_{|S|=|T|=k}\sum_{i\in S,j\in T}X_{ij}$ for biclustering problem \ref{bc_prob} is inefficient\footnote{We usually care about time-efficiency, rather than space-efficiency. See \cite{sos_schramm} lecture 0.}.
+
+The Sum-of-Squares(SOS) method is a novel framework to prove, with construction of poly-time computable instances, identifiability of statistical problems.
+By this way, we simultaneously obtain a poly-time algorithm to solve the problem once we prove the identifiability.
+
+More precisely, SOS is a \textbf{system} for proving problems that non-negativity of $p_1,...,p_m$ implies non-negativity of $p$. Denote it by $p_1(x)\ge 0,...,p_m(x)\ge 0\vdash p(x)\ge 0$. We call a SOS proof is \textbf{$d$-degree} if $\max\{\max_{i\in[m]} deg(p_i),deg(p)\}=d$, denoted by $\vdash_d$.
+
+
+The framework is 
+\begin{enumerate}
+    \item Translation
+    
+    Find some (low) degree-$d$ $n$-variable polynomials $p_1(x),p_2(x),...,p_m(x)$ and $p(x)$, $x=(x_1,...,x_n)\in\mb R^n$. Translate the assumptions of the problem into $x\text{ s.t. }p_1(x)\ge 0,...,p_m(x)\ge 0$\footnote{Actually, we may WLOG relax equality constraint to inequality constraint, since $p=q$ is equivalent to $p-q\ge 0$ and $q-p\ge 0$.}, and the objects of the problem into $p(x)\ge 0$.
+    Then the statement to prove for the problem is \textbf{translated} to
+    \begin{equation}
+        \label{sos_fundamental}
+        p_1(x)\ge0,...,p_m(x)\ge 0\vdash_d p(x)\ge 0.
+    \end{equation}
+
+    \item Verification
+    
+    Starting from some basic SOS inequalities. Use language of SOS proof to \textbf{verify} \eqref{sos_fundamental}. 
+    
+
+    \begin{enumerate}
+        \item (Basic inequalities) To prove "$\vdash$", we usually construct a decomposition such that 
+        $$p(x)=\sum_{S\subseteq [m]}\prod_{i\in S}p_i(x)\cdot q_S(x)+g(x),$$ 
+        where $q_S,g$ are sum-of-squares decompositions $q_S(x)=\sum_{j}q_{S,j}^2(x)$ and $g(x)=\sum_j g_j^2(x)$.
+        This is to say, we use sum-of-squares polynomials to prove non-negativity arguments. 
+        By this way, if $p-q$ is sum-of-squares, we also call the inequalities \textbf{``SOS less than"}, and denote them by "$q\preccurlyeq p$" instead.
+        
+        
+        Note that, inequality of polynomial $\mb R[x]\ni p\le q\in\mb R[x]$ may not always have SOS of polynomial, $i.e.$ $q-p=SOS$, but can be written as SOS of rational function(see \cite{sos_schramm} lecture 0).
+
+        \item (Steps of induction) Then, we operate the inequalities in this proof system. 
+        
+        For example,  $a(x)\ge 0\vdash b(x)\ge 0$, then $a(x)p^2(x)\ge 0\vdash b(x)p(x) + q^2(x)\ge 0$.
+        
+        
+
+    \end{enumerate}
+
+    \item Solution
+    
+    Once \eqref{sos_fundamental} is verified, the statement of the SOS system yields a poly-time algorithm by the main theorem \ref{sos_main}.
+    
+    \begin{thm}
+    \label{sos_main}
+        There is a $(n\cdot m)^{O(d)}$ time algorithm to solve SOS system \eqref{sos_fundamental}.
+    \end{thm}
+    
+    The proof is left to further sections.
+
+   
+
+\end{enumerate}
+
+\bigskip
+
+
+
+\textbf{Example: robust mean estimation}
+
+\begin{prob}
+\label{robust_mean_prob}
+Given distribution $\mc D$ on $\mb R^d$ and vector $\mu\in\mb R^d$, such that
+$\mb E_{X\sim\mc D}[X]=\mu$ and $\mb E_{X\sim\mc D}(X-\mu)(X-\mu)^T=\Sigma\preccurlyeq C\cdot I$ for some constant $C>0$. 
+An adversary modify $\epsilon$-proportion of samples $X_1',...,X_n'\stackrel{\mathrm{i.i.d.}}{\sim}\mc D$, yielding corrupted samples $X_1,...,X_n$ as observation.
+Use corrupted samples to estimate $\mu$ with small error. 
+\end{prob}
+
+Here we want to know the \textbf{identifiability} of this problem. 
+That is, whether it is possible to estimate $\mu$ from the $\epsilon$-corruption observation or not. 
+This is in essence a signal-noise tradeoff problem, and
+we first formulate a sufficient condition of identifiability by classical way, that is:
+
+\begin{thm}
+    \label{robust_mean_classic_main}
+    If \begin{enumerate}
+        \item (Strong signal) $n\gg poly(d/\epsilon)$,
+        \item (Weak noise) there exists an $(1-\epsilon)n$-subset $S\subseteq[n]$ such that, the empirical covariance matrix over $\{X_i\}_{i\in S}$ is bounded,
+    \end{enumerate}
+    then the problem is identifiable. Moreover, there exists estimator $\hat{\mu}~s.t.~\|\mu-\hat{\mu}\|\le O(\sqrt{\epsilon})$.
+\end{thm}
+
+We will see, the classical way of proof can be constructive and yield an algorithm to calculate $\hat{\mu}$ if the problem is identifiable. However, \textbf{the running time for outputting $\hat{\mu}$ may be exponentially long}. On the other hand, SOS proof yields poly-time algorithm.
+Assume $n\gg poly(d/\epsilon)$, we have
+\begin{itemize}
+    \item Classical proof: $~~~~O(\binom{n}{n\epsilon})~~~~~~~~$ time.
+    \item SOS proof: $~~~~~~~~~[d(d+n)]^{O(1)}~$ time.
+\end{itemize}
+
+\pf{\ref{robust_mean_classic_main}}{
+\begin{enumerate}
+    \item First, we show \textbf{how strong signal} will the \textbf{true} samples give us. 
+    
+    Let $\bar{X'} = \frac{1}{n}\sum_{i=1}^n X_i'$ and $\Sigma_X'=\frac{1}{n}\sum_{i=1}^n(X_i'-\bar{X'})(X_i'-\bar{X'})^T$, the concentration results yields
+    \begin{lem} For any $\epsilon>0$, if $n=\Omega(poly(d/\epsilon))$, we have
+        \label{empi_concen}
+        \begin{enumerate}
+            \item $\|\mu - \bar{X'}\|\le \sqrt{\epsilon}~~w.h.p$,
+            \item $\|\Sigma_X'-\Sigma\|\le  C~~w.h.p$ for some constant $C>0$, and thus $\Sigma_X'\preccurlyeq C\cdot I~~w.h.p.$
+        \end{enumerate}
+    \end{lem}
+    \pfskm{lemma}{\ref{empi_concen}}{
+        \begin{enumerate}
+            \item For any constant $C_1>0$, 
+                \begin{align*}
+                    \mb P(\|\mu-\bar{X'}\|\ge C_1\sqrt{\epsilon}) 
+                    \le \mb P\left(\exists j\in[d] \text{ s.t. } \left|\mu_j-\frac{1}{n}\sum_{i=1}^n X_{i,j}' \right|\ge C_1\sqrt{\frac{\epsilon}{d}}\right)
+                    \le \sum_{j=1}^d \frac{O_n(C/n)}{C_1^2 \epsilon/d}
+                    = O_n\left(\frac{d^2}{\epsilon}\cdot \frac{1}{n}\right).
+                \end{align*}
+            \item Since $\Sigma_X' = \frac{1}{n}\sum_{i=1}^n(X_i'-\mu)(X_i'-\mu)^T - (\mu - \bar{X'})(\mu - \bar{X'})^T.$
+                By proof above we know $\|(\mu - \bar{X'})(\mu - \bar{X'})^T\|=\|\mu - \bar{X'}\|^2\le \epsilon~~w.h.p.$ Then, under some regularity conditions,
+                we have $\left\|\frac{1}{n}\sum_{i=1}^n(X_i'-\mu)(X_i'-\mu)^T-\Sigma\right\|\le \epsilon~~w.h.p$, and thus $\|\Sigma_X'\|\le \|\Sigma\| + 2\epsilon\le C~~w.h.p$ for some constant $C>0$.
+                
+                For example, if we assume boundedness of $\|X_1'-\mu\|$, by matrix bernstein inequalities we have
+                \begin{align*}
+                    \mb P\left(\left\|\frac{1}{n}\sum_{i=1}^n(X_i'-\mu)(X_i'-\mu)^T-\Sigma\right\|\ge \epsilon\right) \le 2d \exp\left\{-O\left(\frac{n\epsilon^2}{\|\Sigma\|+\epsilon}\right)\right\}.
+                \end{align*}
+                Note that there exists other condition such as boundedness of the fourth moment.
+        \end{enumerate}
+    }
+    This means, when $n$ is sufficiently large, \textbf{signal} from empirical mean of true samples is \textbf{strong} enough for estimation. However, the true samples are contaminated and some information is lost.
+
+    \item Then, we control the \textbf{noise} due to $\epsilon$-corruption. 
+    
+    Note that, $\epsilon$-corruption means $\epsilon$-total variation distance of empirical distributions of true and corrupted samples.
+    That is, $d_{TV}(\mc D_X', \mc D_X)\le \epsilon$.
+    Intuitively, if the variance are bounded, then small total variation distance implies closeness of the means, 
+    since \textbf{boundedness of variance implies the differences between two distribution are not so wild} and thus \textbf{the noise is weak}.
+    Therefore, empirical mean $\bar{X}$ of corrupted samples $X$ may be close to empirical mean $\bar{X'}$ of true samples $X'$.
+
+    Formally, 
+    \begin{lem}
+    \label{robust_mean_clossic_sol}
+    Let $X,Y$ be random vectors on $\mb R^d$, such that $\mb E(X-\mb E X)(X-\mb E X)^T\preccurlyeq C\cdot I$ and $\mb E(Y-\mb E Y)(Y-\mb E Y)^T\preccurlyeq C\cdot I$ for some constant $C>0$.
+    If $d_{TV}(X,Y)\le \epsilon$, then $\|\mb E X-\mb E Y\|\le O(\sqrt{\epsilon})$.
+    \end{lem}
+    \pfskm{lemma}{\ref{robust_mean_clossic_sol}}{
+    By lemma \ref{tv_coup}, take coupling over $(X,Y)$ such that $\mb P(X\neq Y)\le\epsilon$. Then, 
+    \begin{equation}
+    \label{cauchy_schwarz_les}
+    \begin{split}
+        &\|\mb EX-\mb E Y\|^2 = \langle \mb E(X-Y)\mf{1}_{X\neq Y}, \mb E X - \mb E Y \rangle
+        = \mb E \mf{1}_{X\neq Y} \langle X - Y, \mb E X - \mb E Y \rangle\\
+        &\stackrel{(a)}{\le} \sqrt{\mb E \mf{1}_{X\neq Y}^2} \sqrt{\mb E \langle X - Y, \mb E X - \mb E Y \rangle^2}
+        \le \sqrt{\epsilon} \cdot \sqrt{\mb E \langle X - Y, \mb E X - \mb E Y \rangle^2},
+    \end{split}
+    \end{equation}
+    where $(a)$ uses Cauchy-Schwarz inequality.
+    Then, 
+    \begin{equation}
+    \label{sos_les}
+    \begin{split}
+        &\mb E \langle X - Y, \mb E X - \mb E Y \rangle^2 
+        = \mb E\left[  
+            \langle X - \mb E X, \mb E X - \mb E Y \rangle 
+            -  \langle Y - \mb E Y, \mb E X - \mb E Y \rangle
+            + \langle \mb E X - \mb E Y, \mb E X - \mb E Y \rangle
+        \right]^2\\
+        &\stackrel{(b)}{\le} O(1)\cdot \left[
+            \mb E \langle X - \mb E X, \mb E X - \mb E Y \rangle^2
+            + \langle Y - \mb E Y, \mb E X - \mb E Y \rangle^2
+            + \langle \mb E X - \mb E Y, \mb E X - \mb E Y \rangle^2
+        \right]\\
+        &\stackrel{(a)} O(1)\cdot\left[
+            \mb E\| X - \mb E X \|^2 \cdot \|\mb E X - \mb E Y\|^2
+            + \mb E\| Y - \mb E Y \|^2 \cdot \|\mb E X - \mb E Y\|^2
+            + \|\mb E X - \mb E Y\|^4
+        \right]\\
+        &\stackrel{(c)}{\le} O(1)\cdot [ \|\mb E X - \mb E Y\|^2 +  \|\mb E X - \mb E Y\|^4],
+    \end{split}
+    \end{equation}
+    where $(b)$ uses $2ab\le a^2 + b^2$ and $(c)$ uses boundedness of variance.
+    Therefore, we have
+    \begin{equation}
+    \label{comb_les}
+    \begin{split}
+    & \|\mb EX-\mb E Y\| \le O(\sqrt{\epsilon})\sqrt{1 + \|\mb EX-\mb E Y\|^2}
+    \le O(\sqrt{\epsilon})(1 + \|\mb EX-\mb E Y\|)\\
+    \Longrightarrow & \|\mb EX-\mb E Y\| \le O(\sqrt{\epsilon}).
+    \end{split}
+    \end{equation}
+    }
+    
+    \item Finally, it suffices to show empirical covariance $\Sigma_X$ of corrupted samples is bounded, since we already show empirical covariance $\Sigma_X'$ of true samples is bounded in lemma \ref{empi_concen}, and $d_{TV}(\mc D_X', \mc D_X)$ is small. 
+    However, since the modification can be very wild on the corrupted sample, we may not have $\Sigma_X\preccurlyeq O(1)\cdot I$. 
+    
+    Fortunately, the \textbf{assumption} that $\Sigma_S=\frac{1}{|S|}\sum_{i\in S}\left(X_i-X_S\right)\left(X_i-X_S\right)^T\preccurlyeq C\cdot I$ for some constant $C>0$, 
+    where $X_S=\frac{1}{|S|}\sum_{1\in S}X_i$, reduces the wildness of the corruption.  Then we can use $X_S$ as an estimator instead of $\bar{X'}$. It suffices to show empirical distirbution $\mc D_S$ over $\{X_i\}_{i\in S}$ are not so far from $\mc D_X'$ $w.r.t.$ total variation distance.
+
+    Indeed, we have $d_{TV}(\mc D_X',\mc D_S)\le d_{TV}(\mc D_X',\mc D_X) + d_{TV}(\mc D_X,\mc D_S)\le 2\epsilon$. Then we apply lemma \ref{robust_mean_clossic_sol} to distribution $\mc D_X'$ and $\mc D_S$ to yield
+    $\|\bar{X'}-X_S\|\le O(\sqrt{\epsilon})~~w.h.p.$, and thus $\|X_S-\mu\|\le O(\sqrt{\epsilon})~~w.h.p.$.
+
+
+\end{enumerate}
+}
+
+This constructive proof yields a naive algorithm to calculate $\hat{\mu}$.
+\bigskip
+\begin{breakablealgorithm}
+    \caption{Naive algorithm for robust mean estimation}
+    \label{ineff_robu_mean_est}
+    \begin{algorithmic}[1]
+    \Require{$\epsilon$-corruption Samples $X_1,...,X_n$.}
+    \Ensure{Mean estimation $\hat{\mu}$ such that $\|\hat{\mu}-\mu\|\le O(\sqrt{\epsilon})$.}
+    \For{$S\subseteq[n]$ with $|S|=(1-\epsilon)n$}
+        \State Calculate $X_S=\frac{1}{|S|}\sum_{1\in S}X_i$ 
+            and $\Sigma_S=\frac{1}{|S|}\sum_{i\in S}(X_i-X_S)(X_i-X_S)^T$.
+        \If{$\|\Sigma_S\|\le 2$}
+            \State{Return $\hat{\mu}=X_S$}
+        \EndIf
+    \EndFor
+    \end{algorithmic}
+\end{breakablealgorithm}
+
+\bigskip
+However, the algorithm is inefficient, since the \textbf{running time of brutal search is $O(\binom{n}{n\epsilon})$}.
+Surprisingly, with some translation from this direct proof, we can reformulate the problem into SOS framework. The constructive proof of SOS yields a \textbf{poly-time} computable algorithm to calculate $\hat{\mu}$.
+
+\pfm{SOS version of Theorem}{\ref{robust_mean_classic_main}}{
+\hfill
+\begin{enumerate}
+    \item Translation
+    
+    First we translate the assumptions into non-negativity of multivariate polynomials.
+    
+    Introduce variables $y\in\mb R$, $y_1,...,y_n\in\mb R^d$, indicator variables $w_1,...,w_n$ and auxiliary variables $B\in\rn d$.
+    From the previous analysis, we need these variables satisfying constraint below, denoted by $\mc A$:
+    
+    \begin{enumerate}
+        \item ($\epsilon$-corruption) Find an $(1-\epsilon)n$-subset of corrupted samples.
+        \begin{itemize}
+            \item $w_i^2=w_i$ for $i\in[n]$,
+            \item $w_i X_i= w_i y_i$ for $i\in[n]$,
+            \item $\sum_{i=1}^n w_i=(1-\epsilon)n$.
+        \end{itemize}
+        
+        \item (Bounded variance) Corruption on that subset is not so wild.
+        \begin{itemize}
+            \item $C\cdot I-Cov(y_1,...,y_n)=BB^T$ for some constant $C>0$.
+        \end{itemize}
+        \item (Estimator) Another variable for estimation
+        \begin{itemize}
+            \item $y=\frac{1}{n}\sum_{i=1}^n y_i$.\footnote{Though it's slightly different from original condition(only consider samples over subset $S$), letting $y_i=0$ for $i$ s.t. $w_i=0$ we obtain the same modeling as classicl proof there. Actually, both settings are equivalent.
+            }
+        \end{itemize}
+    \end{enumerate}
+
+    There are $n+d\cdot n + 1 + d\cdot d + 1$ equations of polynomials in total. For each equation $p=q$, we actually obtain two inequalities $p-q\ge 0$ and $q-p\ge 0$. Therefore the original assumptions now become $p_1(x)\ge 0,...,p_m(x)\ge 0$ with $x=(y,y_1,...,y_n,w_1,...,w_n,B)\in\mb R^{1+(d+1)n+d^2}$ and $m=2[(d+1)n+d^2+2]$.
+    
+    Similarly, the objects of the problem become $p(x)=O(\epsilon)-\|y-\mu\|_2^2\ge 0$. Therefore the statement is
+    \begin{equation}
+        \label{robust_mean_est_sos}
+        p_1(x)\ge 0,...,p_m(x)\ge 0 \vdash p(x)\ge 0~~~~~\text{or}~~~~~~\mc A\vdash p(x)\ge 0.
+    \end{equation}
+
+    \item Verification
+    
+    Then, prove \eqref{robust_mean_est_sos}.
+    \begin{enumerate}
+        \item (Basic inequalities) From the proof of lemma \ref{robust_mean_clossic_sol}, we only need the following two inequalities
+        \begin{itemize}
+            \item $(a+b+c)^2\preccurlyeq O(1)\cdot (a^2+b^2+c^2)$. 
+            
+            This is because $a^2+b^2-2ab=(a-b)^2$, then we have $2ab\preccurlyeq a^2+b^2$(or $2ab\preccurlyeq a^2+b^2$), and then $(a+b)^2\preccurlyeq 2(a^2+b^2)$(or $(a+b)^2\preccurlyeq 2(a^2+b^2)$).
+            
+            \item (Cauchy-Schwarz) $\left(\sum_{i=1}^n a_i b_i \right)^2\preccurlyeq \left(\sum_{i=1}^n a_i^2\right) \left(\sum_{i=1}^n b_i^2\right)$.
+            
+            This is because $\left(\sum_{i=1}^n a_i^2\right) \left(\sum_{i=1}^n b_i^2\right) - \left(\sum_{i=1}^n a_i b_i \right)^2 = \sum_{i<j}^n(a_ib_j - a_jb_i)^2$.
+
+        \end{itemize}
+        
+        \item (Steps of induction) Let $X$ satisfies empirical distribution of $X_i$, denoted by $\mc D_X$, $X'$ satisfies empirical distribution of $X_i'$, denoted by $\mc D_X'$, and $Y$ satisfies empirical distribution of of $y_i$, denoted by $\mc D_Y$. Also denote empirical distribution of true smaples $X_i'$ by $\mc D_X'$. Then all the expectations in the proof of lemma \ref{robust_mean_clossic_sol} are polynomials.
+        For example, $\mb EY= \frac{1}{n}\sum_{i=1}^n y_i=y$ is degree-$1$ polynomial.
+
+        If we obtain a feasible solution $x=(y,y_1,...,y_n,w_1,...,w_n,B)$ satisfying all the constraint in the step 1, then we already have $Cov(y_1,...,y_2)\preccurlyeq 2I$  and  $d_{TV}(\mc D_X,\mc D_Y)\le \epsilon$. As long as $n\gg poly(d/\epsilon)$ for concentration of $X_i$, all the conditions of lemma \ref{robust_mean_clossic_sol} are satisfied,
+        and we further have $d_{TV}(\mc D_X',\mc D_Y)\le 2\epsilon$ and $Cov(X_1',...,X_n')\preccurlyeq C\cdot I$. Now it suffices to modify its proof into SOS framework. 
+        
+        By \eqref{cauchy_schwarz_les} we have
+        \begin{equation}
+        \begin{split}
+            &\|\mb EX'-\mb E Y\|^4 \preccurlyeq \epsilon \cdot \mb E \langle X' - Y, \mb E X' - \mb E Y \rangle^2~~~~w.h.p.\text{( of $X_i'$)}.
+        \end{split}
+        \end{equation}
+        By \eqref{sos_les} we have
+        \begin{equation}
+        \begin{split}
+            \mb E \langle X' - Y, \mb E X' - \mb E Y \rangle^2 \preccurlyeq O(1)\cdot [ \|\mb E X' - \mb E Y\|^2 +  \|\mb E X' - \mb E Y\|^4]~~~~w.h.p.\text{( of $X_i'$)}.
+        \end{split}
+        \end{equation}
+        Therefore, $\|\mb EX'-\mb E Y\|^4 \preccurlyeq O(\epsilon)\cdot \|\mb EX'-\mb E Y\|^2~~w.h.p.$, and thus we have $\|\bar{X'}-y\|^4\preccurlyeq O(\epsilon) \|\bar{X'}-y\|^2~~w.h.p.$, where $\bar{X'}=\frac{1}{n}\sum_{i=1}^n X_i'$.
+        
+        Note that, max degree of all the polynomials appeared in the proof above is $6$, thus it is a degree-$6$ SOS proof. Therefore we have
+        \begin{equation}
+        \label{robust_mean_est_sos_final}
+            \mc A \vdash_6 \|\bar{X'}-y\|^4\preccurlyeq O(\epsilon) \|\bar{X'}-y\|^2~~~~w.h.p.\text{( of $X_i'$)}.
+        \end{equation}
+        Though the $RHS$ is slightly different from $p(x)$ defined in \eqref{robust_mean_est_sos}, the two polynomial are equivalent, since $\|\mu-\bar{X'}\|\le \sqrt{\epsilon}~~w.h.p.$ by concentration.
+
+    \end{enumerate}
+
+    \item Solution
+    
+    Finally, note that $m=2[(d+1)n+d^2+2]=O(d(d+n))$ and dimension of $x$ is $1+(d+1)n+d^2=O(d(d+n))$.
+    By theorem \ref{sos_main}, as long as $n=poly(d/\epsilon)$, we only need \textbf{at most $[d(d+n)]^{O(1)}$ running time} to solve \eqref{robust_mean_est_sos_final}.
+    Later we will see the detail implementation by SDP.
+\end{enumerate}
+}
+
+\bigskip
+
+\textbf{Rigorous proof of main theorem \ref{sos_main}}
+
+Detailed implementation of SOS algorithm is based on a definition called pseudoexpectation
+\begin{defn}[pseudoexpectation\cite{sos_schramm}]
+    \label{pseudo_expe}
+    For a set of polynomial axioms $\mathcal{A}=\{p_1\ge 0,...,p_m\ge 0\}$, we say that $\widetilde{\mathbb{E}}: \mathbb{R}[x] \rightarrow \mathbb{R}$ is a degree-$d$ pseudoexpectation satisfying $\mc A$ if it is a linear operator with the following properties:
+    \begin{enumerate}
+        \item Scaling: $\widetilde{\mathrm{\mb E}}[1]=1$
+        \item Respecting axioms: $\widetilde{\mathbb{E}}\left[a^2 p_i\right] \geqslant 0$ for all $i \in[m]$ and $b \in \mathbb{R}[x]$ satisfying $\operatorname{deg}\left(a^2 p_i\right) \leqslant d$.
+        \item Non-negativity of squares: $\widetilde{\mathrm{\mb E}}\left[h^2\right] \geqslant 0$ for any polynomial $h \in \mathbb{R}[x]$ with $\operatorname{deg}(h) \leqslant d / 2$
+    \end{enumerate}
+
+\end{defn}
+Given a constraint set $\mc A$, we need to find a pseudoexpectation $\tilde{\mb E}$ $w.r.t.$ $\mc A$, since it transform the SOS language of inequalities into actual quantities.
+For example, for any $s\le d$, if we have $\mc A\vdash_s p\preccurlyeq q$, then $\tilde{\mb E}[p]\le \tilde{\mb E}[q]$.
+
+In robust mean estimation, by the non-negativity of $\widetilde{\mathbb{E}}$ applied to squares, we have
+$$
+0 \le \widetilde{\mathbb{E}}\left[\left(\|\bar{X'}-y\|^2-\widetilde{\mathbb{E}}\left[\|\bar{X'}-y\|^2\right]\right)^2\right]=\widetilde{\mathbb{E}}\left[\|\bar{X'}-y\|^4\right]-\widetilde{\mathbb{E}}\left[\|\bar{X'}-y\|^2\right]^2 \leqslant \widetilde{\mathbb{E}}\left[\|\bar{X'}-y\|^2\right]\left(O(\varepsilon)-\widetilde{\mathbb{E}}\left[\|\bar{X'}-y\|^2\right]\right),
+$$
+which implies that $\widetilde{\mathbb{E}}\left[\|\bar{X'}-y\|^2\right] \leqslant O(\varepsilon)$. Similarly, $\|\bar{X'}-\widetilde{\mathbb{E}}[y]\|^2 \leqslant O(\varepsilon)$. So the quantity $\widetilde{\mathbb{E}}[y]$ computed by our algorithm is a good estimate for $\bar{X'}$ and thus for $\mu$.
+
+To find a pseudoexpectatio $w.r.t.$ $\mc A$, by linearity it suffices to prescribed pseudoexpectation $\wtd{\mb E}[x_S]$ for any degree-$d$ monomials $x_S=\prod_{i\in S\subseteq[n],|S|\le d}x_i$. Therefore, consider a large matrix $Z\in\rn{n^{O(d)}}$, whose rows and columns are indexed by $d$-subsets of $[n]$. Then, we may take $\wtd{\mb E}[x_{S}]=Z_{A,B}$, where $A\cup B=S$ is an arbitrary partition of $S$. To make it well-defined, assume $Z_{\emptyset,\emptyset}=1$ and $Z_{A,B}=Z_{S,T}$ if $A\cup B=S\cup T$. 
+
+Now, we need to make sure non-negativity and axiom respecting, The way to find such matrix $Z$ is SDP, problem \ref{sdp}.
+\begin{prob}[\cite{sos_schramm}]
+    \label{sdp}
+    Given matrix $C, P_i\in\rn r$, $i\in[m]$, solve the following optimization problem
+    \begin{equation}
+    \begin{split}
+        \max_Z~~~~&\langle Z,C\rangle \\
+        s.t.~~~~ &Z \succeq 0\\
+        &\left\langle Z, P_i\right\rangle\ge 0~~\forall i\in[m]
+    \end{split}
+    \end{equation}
+    Set $C=0$, the problem become finding a feasible solution of the constraints.
+\end{prob}
+The state-of-art SDP algorithm, such as interior point method and epllisoid method, will solve this system in time $poly(r,m)$.
+
+The steps to find a suitable $Z$ as basis of pseudoexpectation by SDP are as follows
+\begin{enumerate}
+    \item First, transform the scalar constraint in $\mc A$ into matrix inner-produt.
+    
+    Indeed, for any $i\in[m]$, $\wtd{\mb E}[p_i]\ge 0$ is actually $\langle Z, P_i \rangle \ge 0$, where $(P_i)_{S,T} = \hat{p_i}(S\cup T)$, which is the coefficient of monomials $x_{S\cup T}$ in $p_i$. To make $\wtd{\mb E}[a^2 p_i]\ge0$ for all $a(x)\in\mb R_{\le d/2}[x]$, it suffices to consider $\wtd{\mb E}[x_S^2 p_i]\ge 0$ for all $S\subset[n],|S|=d/2$. Therefore, we transform $m$ equality constraint in $\mc A$ into $m\cdot n^{O(d)}$ equality constraint in SDP.
+
+    \item Then, the non-negativity is trivial since $0\preccurlyeq Z$ and $\wtd{\mb E}[h^2]= \hat{h}^T Z \hat{h}\ge 0$, where $\hat{h}$ is vector of coefficient of all monomials in $h$. 
+    
+    \item Finally, use state-of-art SDP algorithm, we will solve the SOS algrotihm in time $poly(n^{O(d)}, m\cdot n^{O(d)}) = (n\cdot m)^{O(d)}$.
+\end{enumerate}
+
+
+\bigskip
+
+\textbf{Limitation}
+
+\begin{enumerate}
+    \item Are polynomials enough?
+
+    Not all the problems can be translated into non-negativity of polynomials. (LDP has similar issues.) For example, calculate $\frac{Av}{\|Av\|}$ in power method.
+    
+    \item Inequalities need SOS version
+    
+    Not all polynomial inequalities $p\ge q$ has SOS formulation $p-q=\sum_i g_i^2$. But this is significant for efficiency of SOS, since we need to construct pseudoexpectation inequality $\td{\mb E}[p]\ge \td{\mb E}[q]$ by SDP. 
+    Time complexity of the SDP exponentially depends on dimension of function space of $g_i$, since we constrain $\td{\mb E}[h^2]\ge 0~\forall h\in\mb R[x]$. Space of low degree polynomials is low-dimensional.
+
+\end{enumerate}
+
+\bigskip
+
+\textbf{Hardness and lower bound}
+
+\xb{see \cite{barak2016nearly} and more}
+
+\bigskip
+
+\textbf{More problems}
+
+\xb{see xiechuhan's notes and more sos papers and \cite{barak2016nearly}}
+
+\bigskip
+
+
+
+
+\textbf{Relatioship with low degree polynomial method}
+
+\xb{see [Hop18],[KWB19] and more}
+
+
+
 
 
 
